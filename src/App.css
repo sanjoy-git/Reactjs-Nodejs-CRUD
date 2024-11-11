@@ -1,6 +1,21 @@
 #root {
-  max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
+}
+
+.studentsDiv {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.studentsDiv > div {
+  background-color: #eee;
+  border-radius: 5px;
+  width: 100px;
   text-align: center;
+}
+
+.studentsDiv > div:hover {
+  transform: scale(1.05,1.05);
 }
