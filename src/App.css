@@ -1,21 +1,49 @@
 #root {
   margin: 0 auto;
   padding: 2rem;
+  font-weight: bold;
 }
 
-.studentsDiv {
+/* Student Add Section */
+.studentAddSection {
+}
+
+.studentAddSection > form {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   gap: 5px;
+  width: 200px;
+  margin: auto;
 }
 
-.studentsDiv > div {
+.studentAddSection div {
+  margin: auto;
+}
+
+.studentAddSection input {
+  width: 100%;
+  padding: 3px;
+  margin: auto;
+}
+
+/* Student Show Section */
+.studentShowSection {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  flex-wrap: wrap-reverse;
+  gap: 10px;
+}
+
+.studentShowSection > div {
   background-color: #eee;
   border-radius: 5px;
   width: 100px;
   text-align: center;
+  flex-grow: 1;
+  padding: 5px;
 }
 
-.studentsDiv > div:hover {
-  transform: scale(1.05,1.05);
+.studentShowSection > div:hover {
+  transform: scale(1.05, 1.05);
 }
