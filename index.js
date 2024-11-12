@@ -1,60 +1,54 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const studentsData = require("./database/localDb");
+const studentRoute = require("./routers/studentRoute");
 
 //Defining the express app
 const app = express();
-
 
 //Default use
 app.use(cors()); //Enable cors for all requests.
 app.use(bodyParser.json()); //Using bodyParser to parse json bodies into js objects.
 app.use(bodyParser.urlencoded({ extended: true })); //Content-Type header matches
 
-app.get('/students', (req, res) => {
-  res.json({
-    studentsData,
-    status:"Get success"
+// Routeing
+app.use(studentRoute);
+
+
+//Root Path Server Running Test.
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: "Server is Running",
+    statusCode: 200,
   });
 });
 
-app.post('/studentAdd', (req, res) => {
-  const {name,roll} = req?.body;
-  const uniqueId = Math.random().toString(16).slice(2);
-  studentsData.push({uniqueId,name,roll});
-  res.json({
-    status:"Post success",
-    studentsData
-  })
-});
-
-app.put('/studentUpdate', (req, res) => {
-  
-});
-
-app.delete('./studentDelete', (req, res) => {
-  
-});
-
-//Root Path Test
-app.get("/", (req, res) => {
-  res.status(200).json(
-    {
-      status: "Server is Running",
-      statusCode: 200,
-    }
-  );
-});
-
 //catch 404 and forward to error handler
-app.use((req, res) => {
-  res.status(200).json([
-    {
-      status: "Url not found.",
-      statusCode: 404,
-    },
-  ]);
+app.use((req, res, next) => {
+  res.status(200).json({
+    status: "Url not found.",
+    statusCode: 404,
+  });
+  next();
+});
+
+//Error Handler
+app.use((error, req, res, next) => {
+  if (res.headersSend) {
+    next("Already Header Send.There was a problem!");
+  } else {
+    if (error?.message) {
+      res.status(500).json({
+        status: error?.message,
+        statusCode: 500,
+      });
+    } else {
+      res.status(500).json({
+        status: "Something wrong!",
+        statusCode: 500,
+      });
+    }
+  }
 });
 
 //Server listen for localhost
