@@ -13,10 +13,20 @@ app.use(bodyParser.json()); //Using bodyParser to parse json bodies into js obje
 app.use(bodyParser.urlencoded({ extended: true })); //Content-Type header matches
 
 app.get('/students', (req, res) => {
-  res.json(studentsData);
+  res.json({
+    studentsData,
+    status:"Get success"
+  });
 });
 
 app.post('/studentAdd', (req, res) => {
+  const {name,roll} = req?.body;
+  const uniqueId = Math.random().toString(16).slice(2);
+  studentsData.push({uniqueId,name,roll});
+  res.json({
+    status:"Post success",
+    studentsData
+  })
 });
 
 app.put('/studentUpdate', (req, res) => {
@@ -29,12 +39,12 @@ app.delete('./studentDelete', (req, res) => {
 
 //Root Path Test
 app.get("/", (req, res) => {
-  res.status(200).json([
+  res.status(200).json(
     {
       status: "Server is Running",
       statusCode: 200,
-    },
-  ]);
+    }
+  );
 });
 
 //catch 404 and forward to error handler
