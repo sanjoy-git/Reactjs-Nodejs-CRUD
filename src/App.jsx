@@ -5,15 +5,17 @@ import axios from 'axios'
 
 export default function App() {
 
-  const [studentsData, setStudentsData] = useState([]);
+  const [studentDB, setStudentDB] = useState([]);
 
+  // Student Data Get Function
   useEffect(() => {
     axios.get(`${baseUrl}/students`)
     .then(res => res?.data)
-    .then(data => setStudentsData(data?.studentsData))
+    .then(data => setStudentDB(data?.studentDB))
     .catch(error => console.log(error))
   }, [])
 
+  // Student Add Function
   function studentAdd(e) {
     e.preventDefault();
     const name = document.getElementsByName("name")[0].value;
@@ -30,12 +32,23 @@ export default function App() {
       }}
     )
     .then(res => res?.data)
-    .then(data => setStudentsData(data?.studentsData))
+    .then(data => setStudentDB(data?.studentDB))
     .catch((error) => {
       console.log(error);
     });
   }
   
+  // Student Delete Functon
+  function studentDelete(e,id) {
+    e.preventDefault();
+    axios.delete(`${baseUrl}/studentDelete/${id}`)
+    .then(res => res?.data)
+    .then(data => setStudentDB(data?.studentDB))
+    .catch((error) => {
+      console.log(error);
+    });
+    
+  }
 
   return (
     <>
@@ -61,10 +74,10 @@ export default function App() {
       {/* Student List Show*/}
       <section className='studentShowSection'>
         {
-          studentsData?.map((data,index)=>{
+          studentDB?.map((data,index)=>{
             return(
               <div key={index}> 
-                <del>{data?.uniqueId}</del>
+                <del onClick={(e)=>studentDelete(e,data?.uniqueId)}>X</del>
                 <p>{data?.name}</p>
                 <p>{data?.roll}</p>
               </div>

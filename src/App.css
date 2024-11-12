@@ -22,28 +22,46 @@
 
 .studentAddSection input {
   width: 100%;
-  padding: 3px;
+  padding: 5px;
   margin: auto;
 }
 
 /* Student Show Section */
 .studentShowSection {
   display: flex;
-  justify-content: start;
+  flex-direction: row-reverse;
+  justify-content: center;
   align-items: center;
   flex-wrap: wrap-reverse;
   gap: 10px;
 }
 
 .studentShowSection > div {
-  background-color: #eee;
+  background-color: #ddd;
   border-radius: 5px;
   width: 100px;
-  text-align: center;
   flex-grow: 1;
   padding: 5px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .studentShowSection > div:hover {
   transform: scale(1.05, 1.05);
+}
+
+.studentShowSection > div del {
+  display: block;
+  text-align: center;
+  color: red;
+  cursor: pointer;
+  font-size: large;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #fff;
+  width: 20px;
+  align-self: flex-end;
+  text
 }
