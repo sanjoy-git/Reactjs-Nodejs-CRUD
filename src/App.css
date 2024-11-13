@@ -1,29 +1,35 @@
 #root {
   margin: 0 auto;
-  padding: 2rem;
-  font-weight: bold;
+  padding: 1px;
 }
 
 /* Student Add Section */
-.studentAddSection {
-}
 
-.studentAddSection > form {
+.studentAddForm {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  width: 200px;
+}
+
+.studentAddForm div {
   margin: auto;
 }
 
-.studentAddSection div {
-  margin: auto;
+.studentAddForm input {
+  width: 250px;
+  border-radius: 5px;
+  padding: 8px;
 }
 
-.studentAddSection input {
-  width: 100%;
-  padding: 5px;
-  margin: auto;
+.studentAddForm input[type="submit"] {
+  width: 270px;
+  margin-top: 5px;
+  font-size: large;
+}
+
+.studentAddForm input[type="submit"]:hover {
+  cursor: pointer;
+  background-color: #ccc;
 }
 
 /* Student Show Section */
@@ -39,29 +45,39 @@
 .studentShowSection > div {
   background-color: #ddd;
   border-radius: 5px;
-  width: 100px;
-  flex-grow: 1;
   padding: 5px;
-  text-align: center;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  flex-basis: 250px;
 }
 
 .studentShowSection > div:hover {
   transform: scale(1.05, 1.05);
 }
 
-.studentShowSection > div del {
-  display: block;
+.deleteEditUpdateCancel {
+  align-self: flex-end;
+}
+
+.deleteEditUpdateCancel del {
   text-align: center;
   color: red;
   cursor: pointer;
   font-size: large;
   font-family: Arial, Helvetica, sans-serif;
-  background-color: #fff;
   width: 20px;
-  align-self: flex-end;
-  text
+}
+
+.deleteEditUpdateCancel span {
+  color: green;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.updateBody input {
+  width: 90%;
+  padding: 5px;
+  border-radius: 5px;
 }
