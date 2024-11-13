@@ -2,38 +2,68 @@ const express = require("express");
 const router = express.Router();
 const { studentDB } = require("../models/tempDB");
 
+// Student Get Route
 router.get("/students", (req, res) => {
   res.json({
     studentDB,
-    status: "Get success",
+    status: "get success",
   });
 });
 
+// Student Post Route
 router.post("/studentAdd", (req, res) => {
   const { name, roll } = req?.body;
   const uniqueId = Math.random().toString(16).slice(2);
   studentDB.push({ uniqueId, name, roll });
   res.json({
-    status: "Post success",
+    studentDB,
+    status: "post success",
+  });
+});
+
+// Student Put Route
+router.put("/studentUpdate/:id", (req, res) => {
+  const { id } = req?.params;
+  const { name, roll } = req?.body;
+
+  const updateStudentDB = [];
+
+  studentDB?.map((item) => {
+    if (item?.uniqueId == id) {
+      updateStudentDB.push({
+        uniqueId: item?.uniqueId,
+        name,
+        roll,
+      });
+    } else {
+      updateStudentDB.push(item);
+    }
+  });
+
+  studentDB.length = 0;
+
+  updateStudentDB?.map((item) => studentDB.push(item));
+
+  res.json({
+    status: "update success",
     studentDB,
   });
 });
 
-router.put("/studentUpdate", (req, res) => {});
-
+// Student Delete Route
 router.delete("/studentDelete/:id", (req, res) => {
-  const id = req?.params?.id;
+  const { id } = req?.params;
 
-  const notDeleteData = studentDB.filter((item)=>{
+  const notDeleteData = studentDB.filter((item) => {
     return item.uniqueId != id;
-  })
+  });
 
-  studentDB.length=0;
+  studentDB.length = 0;
 
-  notDeleteData?.map(item=>studentDB.push(item));
+  notDeleteData?.map((item) => studentDB.push(item));
 
   res.json({
-    status: "Delete success",
+    status: "delete success",
     studentDB,
   });
 });
