@@ -12,9 +12,9 @@ router.get("/students", (req, res) => {
 
 // Student Post Route
 router.post("/studentAdd", (req, res) => {
-  const { name, roll } = req?.body;
+  const {profilePictureBase64, name, roll } = req?.body;
   const uniqueId = Math.random().toString(16).slice(2);
-  studentDB.push({ uniqueId, name, roll });
+  studentDB.push({ uniqueId, profilePictureBase64, name, roll });
   res.json({
     studentDB,
     status: "post success",
@@ -24,7 +24,7 @@ router.post("/studentAdd", (req, res) => {
 // Student Put Route
 router.put("/studentUpdate/:id", (req, res) => {
   const { id } = req?.params;
-  const { name, roll } = req?.body;
+  const {profilePictureBase64, name, roll } = req?.body;
 
   const updateStudentDB = [];
 
@@ -32,6 +32,7 @@ router.put("/studentUpdate/:id", (req, res) => {
     if (item?.uniqueId == id) {
       updateStudentDB.push({
         uniqueId: item?.uniqueId,
+        profilePictureBase64,
         name,
         roll,
       });
