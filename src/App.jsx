@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import { baseUrl } from "./apis/apis";
 import axios from "axios";
+import {ImageProcess} from './middleware/ImageProcess'
 
 export default function App() {
   const [studentDB, setStudentDB] = useState([]);
-  const [studentEdit, setStudentEdit] = useState(false);
+  const [isStudentEdit, setIsStudentEdit] = useState(false);
   const [editId, setEditId] = useState(null);
 
   // Student Data Get Function
@@ -17,13 +18,31 @@ export default function App() {
       .catch((error) => console.log(error));
   }, []);
 
+  
+  // Set Profile Picture Handler Function
+  var profilePictureBase64; // Global Variable Declar
+  async function profilePictureHandlerFunc(e,handle) {
+    e.preventDefault();
+    // const url = URL.createObjectURL(e?.target?.files[0]);
+
+    profilePictureBase64 = await ImageProcess(e?.target?.files[0]); // Image Processing Middleware Function     
+
+    if(handle == "profilePicture"){
+      document.getElementById("profilePicture").src = await profilePictureBase64;
+    }
+    else{
+      document.getElementById("updateProfilePicture").src =await profilePictureBase64;      
+    }
+  }
+
   // Student Add Function
-  function studentAdd(e) {
+  function studentAddFunc(e) {
     e.preventDefault();
     const name = document.getElementsByName("name")[0].value;
     const roll = document.getElementsByName("roll")[0].value;
+    
 
-    const body = { name, roll };
+    const body = {profilePictureBase64, name, roll};
 
     axios
       .post(
@@ -45,7 +64,7 @@ export default function App() {
   }
 
   // Student Delete Functon
-  function studentDelete(e, id) {
+  function studentDeleteFunc(e, id) {
     e.preventDefault();
     axios
       .delete(`${baseUrl}/studentDelete/${id}`)
@@ -57,12 +76,12 @@ export default function App() {
   }
 
   // Student Update Function
-  function studentUpdateFunction(e, id) {
+  function studentUpdateFunc(e, id) {
     e.preventDefault();
     const name = document.getElementsByName("updateName")[0].value;
     const roll = document.getElementsByName("updateRoll")[0].value;
 
-    const body = { name, roll };
+    const body = {profilePictureBase64, name, roll };
 
     axios
       .put(
@@ -87,7 +106,12 @@ export default function App() {
     <>
       {/* Student Add Form */}
       <section>
-        <form onSubmit={studentAdd} className="studentAddForm">
+        <form onSubmit={studentAddFunc} className="studentAddForm">
+          <div className="profilePicture">
+            <label htmlFor="fileUpload">i</label>
+            <img src="./avater.webp" id="profilePicture" alt="" />
+            <input type="file" id="fileUpload" accept="image/png, image/gif, image/jpeg" onChange={(e)=>profilePictureHandlerFunc(e,"profilePicture")}/>
+          </div>
           <div>
             <label htmlFor="name">Name:</label>
             <br />
@@ -108,27 +132,32 @@ export default function App() {
       <br />
 
       {/* Student List Show and Delete and Edit*/}
-      <section className="studentShowSection">
+      <section className="studentCards">
         {studentDB?.map((item, index) => {
-          return studentEdit & (editId == item?.uniqueId) ? (
-            <div className="updateBody" key={index}>
+          return isStudentEdit & (editId == item?.uniqueId) ? (
+            <div className="studentCard" key={index}>
               <div
                 className="deleteEditUpdateCancel"
-                onClick={() => setStudentEdit(!studentEdit)}
+                onClick={() => setIsStudentEdit(!isStudentEdit)}
               >
                 <span style={{ color: "blue" }}>Cancle</span>
               </div>
               {/* Student Edit Form */}
-              <form onSubmit={(e)=>{studentUpdateFunction(e,item?.uniqueId);setStudentEdit(!studentEdit)}} className="studentAddForm">
+              <form onSubmit={(e)=>{studentUpdateFunc(e,item?.uniqueId);setIsStudentEdit(!isStudentEdit)}} className="studentAddForm">
+                <div className="profilePicture">
+                  <label htmlFor="updateFileUpload">i</label>
+                  <img src={item?.profilePictureBase64} id="updateProfilePicture" alt="Profile Picture" />
+                  <input type="file" id="updateFileUpload" accept="image/png, image/gif, image/jpeg" onChange={(e)=>profilePictureHandlerFunc(e,"updateProfilePicture")}/>
+                </div>
                 <div>
                   <label htmlFor="name">Name:</label>
                   <br />
-                  <input type="text" name="updateName" maxLength={25} required autoFocus/>
+                  <input type="text" name="updateName" maxLength={25} defaultValue={item?.name} required autoFocus/>
                 </div>
                 <div>
                   <label htmlFor="roll">Roll:</label>
                   <br />
-                  <input type="number" name="updateRoll" maxLength={10} required/>
+                  <input type="number" name="updateRoll" maxLength={10} defaultValue={item?.roll} required/>
                 </div>
                 <div>
                   <input type="submit" value="Update"/>
@@ -136,25 +165,30 @@ export default function App() {
               </form>
             </div>
           ) : (
-            <div key={index}>
+            <div className="studentCard" key={index}>
               <div className="deleteEditUpdateCancel">
                 <span
                   style={{ color: "red" }}
-                  onClick={(e) => studentDelete(e, item?.uniqueId)}
+                  onClick={(e) => studentDeleteFunc(e, item?.uniqueId)}
                 >
                   Remove
                 </span>
                 <span
                   onClick={() => {
-                    setStudentEdit(!studentEdit);
+                    setIsStudentEdit(!isStudentEdit);
                     setEditId(item?.uniqueId);
                   }}
                 >
                   Edit
                 </span>
               </div>
-              <p><b>Name: </b> {item?.name}</p>
-              <p><b>Roll: </b>{item?.roll}</p>
+              <div className="studentCardBody">
+                <img src={item?.profilePictureBase64} alt="Profile Picture" />
+                <div>
+                  <p><b>Name: </b> {item?.name}</p>
+                  <p><b>Roll: </b>{item?.roll}</p>
+                </div>
+              </div>
             </div>
           );
         })}
