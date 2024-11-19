@@ -23,8 +23,8 @@ export async function ImageProcess(imageFile) {
   
         const contex = canvas.getContext("2d");
         contex.drawImage(createImage, 0, 0, canvas.width, canvas.height);
-  
-        resolve(contex.canvas.toDataURL("image/jpg", 90));
+        const newImageUrl = contex.canvas.toDataURL("image/jpg", 90);
+        resolve(newImageUrl);
       };
     };
 

@@ -2,53 +2,62 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import { baseUrl } from "./apis/apis";
 import axios from "axios";
-import {ImageProcess} from './middleware/ImageProcess'
+import {ImageProcess} from './customHook/ImageProcess'
 
 export default function App() {
   const [studentDB, setStudentDB] = useState([]);
   const [isStudentEdit, setIsStudentEdit] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [messageRes, setMessageRes] = useState("Please student add");
 
-  // Student Data Get Function
+  // Students Get | Default Call
   useEffect(() => {
-    axios
+    axios   //Axios Use For Backend API
       .get(`${baseUrl}/students`)
       .then((res) => res?.data)
       .then((data) => setStudentDB(data?.studentDB))
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        console.log(error);
+        setMessageRes(<span style={{'color':'red'}}>Server problem</span>);
+      });
   }, []);
 
   
   // Set Profile Picture Handler Function
-  var profilePictureBase64; // Global Variable Declar
+  var processProfilePictureBase64Url; // Global Variable Declar
+
   async function profilePictureHandlerFunc(e,handle) {
-    e.preventDefault();
+    e.preventDefault();  //DEfault submit reloading off
     // const url = URL.createObjectURL(e?.target?.files[0]);
 
-    profilePictureBase64 = await ImageProcess(e?.target?.files[0]); // Image Processing Middleware Function     
+    processProfilePictureBase64Url = await ImageProcess(e?.target?.files[0]); //Image Processing Custom Hook Function     
 
     if(handle == "profilePicture"){
-      document.getElementById("profilePicture").src = await profilePictureBase64;
+      document.getElementById("profilePicture").src = await processProfilePictureBase64Url; //Profile Picture Show
     }
     else{
-      document.getElementById("updateProfilePicture").src =await profilePictureBase64;      
+      document.getElementById("updateProfilePicture").src =await processProfilePictureBase64Url; //Profile Picture Show 
     }
   }
-
+  
   // Student Add Function
   function studentAddFunc(e) {
-    e.preventDefault();
-    const name = document.getElementsByName("name")[0].value;
-    const roll = document.getElementsByName("roll")[0].value;
+
+    e.preventDefault();   //DEfault submit reloading off
+
+    let name = document.getElementsByName("name")[0].value; //Student Add Form Name Get
+    let roll = document.getElementsByName("roll")[0].value; //Student Add Form Roll Get
+
     
+    
+    const body = {processProfilePictureBase64Url, name, roll};
+    // console.log(processProfilePictureBase64Url);
 
-    const body = {profilePictureBase64, name, roll};
-
-    axios
+    axios    //Axios Use For Backend API
       .post(
         `${baseUrl}/studentAdd`,
         {
-          ...body,
+          ...body, //Spread Student Body
         },
         {
           headers: {
@@ -57,16 +66,27 @@ export default function App() {
         }
       )
       .then((res) => res?.data)
-      .then((data) => setStudentDB(data?.studentDB))
+      .then((data) => {
+        setStudentDB(data?.studentDB);
+        setMessageRes(data?.message);
+        if(data?.status=="success"){
+          e.target.reset();  //Student Add Form Reset   
+          document.getElementById('profilePicture').src="./avater.webp"; //Profile picture reset
+          setTimeout(() => {
+            setMessageRes(null); 
+          }, 3000);
+        }
+      })
       .catch((error) => {
         console.log(error);
+        setMessageRes(<span style={{'color':'red'}}>Server problem</span>);
       });
   }
 
   // Student Delete Functon
   function studentDeleteFunc(e, id) {
-    e.preventDefault();
-    axios
+    e.preventDefault();  //DEfault submit reloading off
+    axios   //Axios Use For Backend API
       .delete(`${baseUrl}/studentDelete/${id}`)
       .then((res) => res?.data)
       .then((data) => setStudentDB(data?.studentDB))
@@ -76,12 +96,12 @@ export default function App() {
   }
 
   // Student Update Function
-  function studentUpdateFunc(e, id) {
-    e.preventDefault();
+  function studentUpdateFunc(e, id, imagePath) {
+    e.preventDefault();   //DEfault submit reloading off
     const name = document.getElementsByName("updateName")[0].value;
     const roll = document.getElementsByName("updateRoll")[0].value;
 
-    const body = {profilePictureBase64, name, roll };
+    const body = {processProfilePictureBase64Url, imagePath, name, roll };
 
     axios
       .put(
@@ -106,12 +126,13 @@ export default function App() {
     <>
       {/* Student Add Form */}
       <section>
-        <form onSubmit={studentAddFunc} className="studentAddForm">
+        <form onSubmit={studentAddFunc} id="studentAddForm" className="studentAddForm">
           <div className="profilePicture">
             <label htmlFor="fileUpload">i</label>
             <img src="./avater.webp" id="profilePicture" alt="" />
-            <input type="file" id="fileUpload" accept="image/png, image/gif, image/jpeg" onChange={(e)=>profilePictureHandlerFunc(e,"profilePicture")}/>
+            <input type="file" id="fileUpload" name="profilePicture" accept="image/png, image/gif, image/jpeg" onChange={(e)=>profilePictureHandlerFunc(e,"profilePicture")}/>
           </div>
+          <p>{messageRes && messageRes}</p>
           <div>
             <label htmlFor="name">Name:</label>
             <br />
@@ -143,10 +164,10 @@ export default function App() {
                 <span style={{ color: "blue" }}>Cancle</span>
               </div>
               {/* Student Edit Form */}
-              <form onSubmit={(e)=>{studentUpdateFunc(e,item?.uniqueId);setIsStudentEdit(!isStudentEdit)}} className="studentAddForm">
+              <form onSubmit={(e)=>{studentUpdateFunc(e,item?.uniqueId,item?.imagePath);setIsStudentEdit(!isStudentEdit)}} className="studentAddForm">
                 <div className="profilePicture">
                   <label htmlFor="updateFileUpload">i</label>
-                  <img src={item?.profilePictureBase64} id="updateProfilePicture" alt="Profile Picture" />
+                  <img src={baseUrl+"/"+item?.imagePath} id="updateProfilePicture" alt="Profile Picture" />
                   <input type="file" id="updateFileUpload" accept="image/png, image/gif, image/jpeg" onChange={(e)=>profilePictureHandlerFunc(e,"updateProfilePicture")}/>
                 </div>
                 <div>
@@ -183,7 +204,7 @@ export default function App() {
                 </span>
               </div>
               <div className="studentCardBody">
-                <img src={item?.profilePictureBase64} alt="Profile Picture" />
+                <img src={baseUrl+"/"+item?.imagePath} alt="Profile Picture" />
                 <div>
                   <p><b>Name: </b> {item?.name}</p>
                   <p><b>Roll: </b>{item?.roll}</p>
