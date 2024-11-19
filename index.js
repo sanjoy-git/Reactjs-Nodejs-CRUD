@@ -2,20 +2,22 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const studentRoute = require("./routers/studentRoute");
+const path = require("path");
 
-//Defining the express app
+//Defining The Express App
 const app = express();
 
 //Default use
-app.use(cors()); //Enable cors for all requests.
-app.use(bodyParser.json()); //Using bodyParser to parse json bodies into js objects.
-app.use(bodyParser.urlencoded({ extended: true })); //Content-Type header matches
+app.use(cors()); //Enable Cors For Different URL All Requests
+app.use(bodyParser.json()); //Using bodyParser To Parse Fson Bodies Into JS Objects
+app.use(bodyParser.urlencoded({ extended: false })); //Content-Type Header Matches
+app.use(express.static(path.join(__dirname, "public"))); // Public Folder Is A Public
 
 // Routeing
-app.use(studentRoute);
+app.use(studentRoute);  // studentRoute Use For Routing.This Route is Student CRUD Operation
 
 
-//Root Path Server Running Test.
+//Default
 app.get("/", (req, res) => {
   res.status(200).json({
     status: "Server is Running",
@@ -23,7 +25,7 @@ app.get("/", (req, res) => {
   });
 });
 
-//catch 404 and forward to error handler
+//Catch 404 | Not Found
 app.use((req, res, next) => {
   res.status(200).json({
     status: "Url not found.",
@@ -51,7 +53,7 @@ app.use((error, req, res, next) => {
   }
 });
 
-//Server listen for localhost
+//Server Listen For Localhost
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port} 🔥`);

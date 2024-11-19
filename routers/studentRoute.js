@@ -1,72 +1,159 @@
 const express = require("express");
-const router = express.Router();
-const { studentDB } = require("../models/tempDB");
+const shortUniqueId = require("short-unique-id");
+
+const router = express.Router();  //Express Router Function Use
+
+const uId = new shortUniqueId({ length: 10 }); //Unique Id Length Set
+
+const { studentDB } = require("../models/tempDB"); //Require Student Database Array
+
+const {
+  imageSaveFunc,
+  imageDeleteFunc,
+} = require("../middleware/imageFileHandle"); //Student Profile Picture Process and Save Folder
 
 // Student Get Route
-router.get("/students", (req, res) => {
-  res.json({
-    studentDB,
-    status: "get success",
-  });
+router.get("/students", (req, res, next) => {
+  try {
+    //Response Status Code & Json Object For Frontend
+    res.status(200).json({
+      studentDB,
+      status: "success",
+      message : "Student get successfully"
+    });
+  } catch (error) {
+    next(error); //If Error Throw Error Handler Function
+  }
 });
 
-// Student Post Route
-router.post("/studentAdd", (req, res) => {
-  const {profilePictureBase64, name, roll } = req?.body;
-  const uniqueId = Math.random().toString(16).slice(2);
-  studentDB.push({ uniqueId, profilePictureBase64, name, roll });
-  res.json({
-    studentDB,
-    status: "post success",
-  });
-});
+// Student Post Route | imageSaver Middleware Use For Image Process And Save
+router.post("/studentAdd", async (req, res, next) => {
+  try {
+    const { processProfilePictureBase64Url, name, roll } = req?.body; //Request Data From Frontend
 
-// Student Put Route
-router.put("/studentUpdate/:id", (req, res) => {
-  const { id } = req?.params;
-  const {profilePictureBase64, name, roll } = req?.body;
+    // const uId = new shortUniqueId({ length: 10 }); //Unique Id length
+    const uniqueId = uId?.rnd(); //Unique Id Generate
 
-  const updateStudentDB = [];
+    //Profile Picture Save And Return Saved Image Path
+    const imagePath = imageSaveFunc(
+      processProfilePictureBase64Url,
+      uniqueId,
+      name,
+      "students",
+      next
+    );
 
-  studentDB?.map((item) => {
-    if (item?.uniqueId == id) {
-      updateStudentDB.push({
-        uniqueId: item?.uniqueId,
-        profilePictureBase64,
-        name,
-        roll,
+    //if imagePath Not Undefine
+    if (imagePath) {
+      //StudentDB Array Push New Student
+      studentDB.push({ uniqueId, imagePath, name, roll });
+
+      //Response Status Code & Json Object For Frontend
+      res.status(200).json({
+        studentDB,
+        status: "success",
+        message: "Add successfully",
       });
     } else {
-      updateStudentDB.push(item);
+      //Response Status Code & Json Object For Frontend
+      res.status(200).json({
+        studentDB,
+        status: "faild",
+        message: "Correct profile picture add and try again.",
+      });
     }
-  });
-
-  studentDB.length = 0;
-
-  updateStudentDB?.map((item) => studentDB.push(item));
-
-  res.json({
-    status: "update success",
-    studentDB,
-  });
+  } catch (error) {
+    next(error); //If Error Throw Error Handler Function
+  }
 });
 
-// Student Delete Route
-router.delete("/studentDelete/:id", (req, res) => {
-  const { id } = req?.params;
+//Student update route req.body(processProfilePictureBase64Url,imagePath,name,roll)
+router.put("/studentUpdate/:id", (req, res, next) => {
+  try {
+    const { id } = req?.params;  //Request Student Id Destructuring
+    const { processProfilePictureBase64Url, name, roll } = req?.body; //Request body
 
-  const notDeleteData = studentDB.filter((item) => {
-    return item.uniqueId != id;
-  });
+    const updateStudentDB = studentDB?.map((item) => { //Studentdb Each Student Pass And Return Update Student Array
 
-  studentDB.length = 0;
+      if (item?.uniqueId != id) { //If Student id Not Equal
+        return item;    //Each student object return
+      } else {
+        if (processProfilePictureBase64Url) {  //If Student Profile Picture Base64url 
 
-  notDeleteData?.map((item) => studentDB.push(item));
+          imageDeleteFunc(item?.imagePath, next); //Old Profile Picture Delete
+          
+          const uniqueId = id +"_"+ uId?.rnd(); //Unique Id Generate
 
-  res.json({
-    status: "delete success",
-    studentDB,
-  });
+
+          const updateImagePath = imageSaveFunc( //New Profile Picture Save And Update Path Return
+            processProfilePictureBase64Url,
+            uniqueId,
+            name,
+            "students",
+            next
+          );
+
+          return{ //If Update Profile Picture
+            uniqueId: id,
+            imagePath: updateImagePath,
+            name,
+            roll,
+          };
+
+
+        } else {
+          return{ //If Same Profile Picture
+            uniqueId: id,
+            imagePath: item?.imagePath,
+            name,
+            roll,
+          };
+        }
+      }
+    });
+
+    studentDB.length = 0; //Student database clean
+
+    updateStudentDB?.map((item) => studentDB.push(item)); //Update Push StudentDB
+
+    //Response Status Code & Json Object For Frontend
+    res.status(200).json({
+      studentDB,
+      message: "Update successfully",
+      status: "success",
+    });
+  } catch (error) {
+    next(error); //If Error Throw Error Handler Function
+  }
 });
 
-module.exports = router;
+
+//Student delete route
+router.delete("/studentDelete/:id", async (req, res, next) => {
+  try {
+    const { id } = req?.params;  //Request Student Id Destructuring
+
+    const notDeleteData = studentDB.filter((item) => {
+      //Without delete student filter
+      if (item?.uniqueId == id) {  //If Delete Dtudent Id Equal
+        imageDeleteFunc(item?.imagePath, next); //Delete profile picture
+      }
+      return item?.uniqueId != id;  //If Delete Student Id Not Equal This Student Object Return 
+    });
+
+    studentDB.length = 0; //Student DB Clean
+
+    notDeleteData?.map((item) => studentDB.push(item)); //Student db array filter student add/push
+
+    //Response Status Code & Json Object for Frontend
+    res.status(200).json({
+      studentDB,
+      status: "success",
+      message: "Delete successfully"
+    });
+  } catch (error) {
+    next(error); //If Error Throw Error Handler Function
+  }
+});
+
+module.exports = router;  //Default Export Router

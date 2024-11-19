@@ -1,3 +1,5 @@
-const studentDB = [{uniqueId:0,name:"default",roll:100}];
+// const studentDB = [{uniqueId:0, imagePath:"", name:"Sanjoy", roll:100}];
+
+const studentDB = [];
 
 module.exports = {studentDB}
